@@ -1,0 +1,7 @@
+
+# On how to use wlcd just type "sudo /home/pi/w16x2lcd" for brief explaination.
+sudo /home/pi/w16x2lcd c
+sudo /home/pi/w16x2lcd 1 1 Raspbian V
+osversion=$(uname -a | grep raspberrypi | awk '{gsub("-v7\+","",$3); print $3}' )
+sudo /home/pi/w16x2lcd 1 11 $osversion
+

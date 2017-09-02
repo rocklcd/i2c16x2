@@ -1,0 +1,169 @@
+
+/*
+ * I2C_example_arduino.c
+ * 
+ * 
+ * 
+ * * ***************************************************************************
+ # This program is a free software. You can use/modify/distribute freely upon
+ # agreeing the followings.
+ #
+ # DISCLAIMER:
+ # NO WARRANTY or implied warranty of any kind. Any user who makes use 
+ # of this software shall be solely responsible for any liability/direct
+ # lose/indirect lose which may occur.
+ #
+ # ***************************************************************************
+ *
+ * 
+*/
+
+
+
+#include <Wire.h>
+#include <string.h>
+
+unsigned int delay10 = 5;
+unsigned int delay1000 = 1000;
+
+//I2C control parameters
+int I2C_ADDR = 0x3C;
+int INSTRUCTION = 0x00;
+int CHAR = 0x40;
+
+//basic instructions
+//(Can create your own according to HD44780 instruction sets)
+int TWO_LINE_MODE = 0x38;
+int CLR_SCREEN = 0x01;
+int RET_HOME = 0x02;
+int DISPLAY_ON_CURSOR_OFF = 0x0C;
+int DISPLAY_ON_CURSOR_ON = 0x0E;
+int DISPLAY_OFF_CURSOR_OFF = 0x08;
+
+//global varible
+//allowing input 16 characters per line 
+//you can change the number up to 41 
+char message[17];
+
+void lcd_write_instruction(int inst);
+void lcd_write_character(int character);
+void lcd_write_string(char str_list[17]);
+int jump(int line,int position);
+
+
+
+void setup() {
+  // put your setup code here, to run once:
+  Wire.begin();
+  memset(message,32,sizeof(message));
+  lcd_write_instruction(TWO_LINE_MODE) ;
+  lcd_write_instruction(CLR_SCREEN) ;
+  lcd_write_instruction(DISPLAY_ON_CURSOR_ON) ;
+  
+} 
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  int new_position = jump(1,1);
+  if (new_position == 0xFF )
+    {
+        return 1;
+     }
+    else 
+    {
+        lcd_write_instruction(new_position);
+        strncpy(message, "i2c interface ", 17);
+        lcd_write_string(message);
+    }
+
+     new_position = jump(2,3);
+  if (new_position == 0xFF )
+    {
+        return 1;
+     }
+    else 
+    {
+        lcd_write_instruction(new_position);
+        strncpy(message, "in Arduino ", 17);
+        lcd_write_string(message);
+    }
+
+  return 0;
+
+}
+
+
+void lcd_write_instruction(int inst)
+{
+  Wire.beginTransmission(I2C_ADDR);
+  Wire.write(byte(INSTRUCTION));
+  Wire.write(byte(inst));
+  Wire.endTransmission();  
+  delay(10);
+}
+  
+  
+void lcd_write_character(int character)
+{
+  Wire.beginTransmission(I2C_ADDR);
+  Wire.write(byte(CHAR));
+  Wire.write(byte(character));
+  Wire.endTransmission();  
+  delay(10);
+}
+
+
+void lcd_write_string(char str_list[17])
+{
+  int ii =  0;
+  int iline1 [17] ;
+  int numaa ;
+  
+  delay(delay10);
+  for ( ii=0;  ii<17 ; ii++)
+    {
+      iline1[ii] = str_list[ii];
+      numaa= iline1[ii];
+      
+      if (numaa==10 || numaa==0)
+      {
+        return;
+      }
+      lcd_write_character(numaa);
+      delay(delay10);
+    }
+}
+
+
+int jump(int line, int position)
+{
+    int pos ;
+    if ((1 > position) || (position >16)) 
+    {
+        //printf("invalid position"); 
+        lcd_write_instruction(CLR_SCREEN);
+        strncpy(message, "invalid position", 17);
+        lcd_write_string(message);
+        return 0xFF;
+  }
+    
+    if (line == 1 )
+    {
+        pos = 0x80 + position - 1 ;
+        return pos ;
+     }
+    else if (line == 2 )
+    {
+        pos = 0xC0 + position - 1 ;
+        return pos ;
+  }
+    else 
+    {
+        //print("invalid line");
+        lcd_write_instruction(CLR_SCREEN);
+        strncpy(message, "invalid line", 17);
+        lcd_write_string(message);
+        return 0xFF ;
+    }
+}
+

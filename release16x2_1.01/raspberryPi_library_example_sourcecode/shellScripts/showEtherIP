@@ -1,0 +1,17 @@
+# On how to use wlcd just type"sudo /home/pi/w16x2lcd"for brief explaination.
+#
+# TO INCLUDE THIS SCRIPT in /etc/rc.local or .bashrc of your home directroy.
+# Chane the corrsponding absolute path name if necessary. 
+# shall show the ether0 address at boot up.
+
+sudo /home/pi/w16x2lcd c
+ipaddress=$(ip addr | grep -w inet.*eth0 | awk '{ gsub("/24","",$2); print $2}' )
+i="0"
+while [ "$ipaddress" = "" ] && [ $i -lt 5 ]
+do
+  sleep 3
+  ipaddress=$(ip addr | grep -w inet.*eth0 | awk  '{ gsub("/24","",$2); print $2}' )
+  i=$[$i+1]
+done
+sudo /home/pi/w16x2lcd 2 2 $ipaddress
+

@@ -1,0 +1,29 @@
+#
+# On how to use wlcd just type "sudo /home/pi/w16x2lcd" for brief explaination.
+#
+# Please  note that if you do not have a WiFi connection
+# it is not recommended that you put this script to
+# .bashrc in your home directory. This may slow down the
+# creation of console window.
+#
+#
+# TO INCLUDE THIS SCRIPT in /etc/rc.local or .bashrc of your home directroy.
+# Change the absolute path if necessary.
+#
+# In case of wifi connection during boot up takes up more then
+# 15 seconds,  this script will give up waiting. Therefore no IP
+# address is shown. However, by initiating a new console window
+# .bashrc will be executed again, IP address is shown under the
+# condition that there is a established wifi connection.
+
+sudo /home/pi/w16x2lcd c
+ipaddress=$(ip addr | grep -w inet.*wlan0 | awk  '{ gsub("/24","",$2); print $2}' )
+i="0"
+while [ "$ipaddress" = "" ] && [ $i -lt 5 ]
+do
+  sleep 3
+  ipaddress=$(ip addr | grep -w inet.*wlan0 | awk  '{ gsub("/24","",$2); print $2}' )
+  i=$[$i+1]
+done
+sudo /home/pi/w16x2lcd 2 2 $ipaddress
+

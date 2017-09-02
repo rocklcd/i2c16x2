@@ -1,0 +1,1 @@
+//To run the scripts please copy w16x2lcd to /home/pi/
